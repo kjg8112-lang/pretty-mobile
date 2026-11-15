@@ -1,0 +1,44 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      # 플랫폼 폴더(android/)가 없으면 임시 프로젝트에서 생성해 복사
+      - name: Generate Android platform files
+        run: |
+          flutter create --platforms android --org com.example --project-name putty_mobile tmp_app
+          cp -r tmp_app/android .
+          rm -rf tmp_app
+
+      # 인터넷 권한 추가 (release 빌드에 필요)
+      - name: Add INTERNET permission
+        run: |
+          sed -i 's|<manifest xmlns:android="http://schemas.android.com/apk/res/android">|&\n    <uses-permission android:name="android.permission.INTERNET"/>|' \
+            android/app/src/main/AndroidManifest.xml
+
+      # 보안 저장소 요구사항: minSdk 23 이상
+      - name: Set minSdk 23
+        run: |
+          sed -i -E 's/minSdk = flutter\.minSdkVersion/minSdk = 23/; s/minSdkVersion flutter\.minSdkVersion/minSdkVersion 23/' \
+            android/app/build.gradle* || true
+
+      - run: flutter pub get
+
+      - run: flutter build apk --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: putty-mobile-apk
+          path: build/app/outputs/flutter-apk/app-release.apk

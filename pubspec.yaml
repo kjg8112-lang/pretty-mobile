@@ -1,0 +1,21 @@
+name: putty_mobile
+description: PuTTY 스타일의 모바일 SSH 터미널 클라이언트
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dartssh2: ^2.9.0                 # SSH 연결 (순수 Dart)
+  xterm: ^4.0.0                    # 터미널 에뮬레이터 위젯
+  flutter_secure_storage: ^9.2.2   # 접속 정보 암호화 저장
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
